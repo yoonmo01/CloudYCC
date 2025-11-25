@@ -8,3 +8,8 @@
 pip install -r requirements.txt
 cd CloudYCC
 ```
+
+DB : PostgreSQL
+backend: Fastapi
+Front: React
+
