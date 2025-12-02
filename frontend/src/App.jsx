@@ -1,3 +1,4 @@
+// src/App.jsx
 import { Routes, Route, Link } from 'react-router-dom';
 import Home from './pages/Home';
 import Main from './pages/Main';
@@ -6,7 +7,6 @@ import Report from './pages/Report';
 function App() {
   return (
     <div>
-      {/* 개발용 상단 네비게이션 (나중에 숨겨도 됨) */}
       <nav
         style={{
           padding: '10px 20px',
