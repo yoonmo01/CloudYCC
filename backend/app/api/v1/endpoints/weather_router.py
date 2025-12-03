@@ -9,7 +9,7 @@ router = APIRouter()
 # 날씨 확인: /api/v1/weather/check
 @router.get("/check", response_model=WeatherResponse)
 def check_weather(lat: float, lon: float):
-    return WeatherService.get_weather(lat, lon)
+    return WeatherService.get_current_weather(lat, lon)
 
 # 거리 확인: /api/v1/weather/distance
 @router.get("/distance", response_model=DistanceResponse)
