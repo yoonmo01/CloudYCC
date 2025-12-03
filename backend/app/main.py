@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.v1.api import api_router
+from CloudYCC.backend.app.api.api import api_router
 
 app = FastAPI(title="CloudYCC Project")
 
