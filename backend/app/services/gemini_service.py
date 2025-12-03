@@ -11,7 +11,7 @@ class GeminiService:
             genai.configure(api_key=GeminiService.API_KEY)
             
             # 2. 모델 설정 (gemini-1.5-flash 가 빠르고 무료로 쓰기 좋습니다)
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel('gemini-2.0-flash-exp')
             
             # 3. 질문 보내기
             response = model.generate_content(prompt)
