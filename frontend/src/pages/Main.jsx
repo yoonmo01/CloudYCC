@@ -198,17 +198,27 @@ export default function Main() {
   const toggleDetail = () => setIsDetailOpen((prev) => !prev);
 
   const handleMarkerClick = (lm) => {
+    // ✅ 이제는 "정보만 열기"
     setSelectedLandmark(lm);
     setIsDetailOpen(true);
+  };
 
-    // 체크리스트에 없으면 추가 (id 포함해서 저장)
+  // ✅ 상세 패널의 "여행 일정에 추가하기" 버튼
+  const handleAddSelectedToChecklist = () => {
+    if (!selectedLandmark || !regionKey) return;
+
+    const key = `${regionKey}-${selectedLandmark.id}`;
     setChecklist((prev) => {
-      const key = `${regionKey}-${lm.id}`;
       const exists = prev.some((item) => item.key === key);
       if (exists) return prev;
       return [
         ...prev,
-        { key, id: lm.id, name: lm.name, region: regionData.label },
+        {
+          key,
+          id: selectedLandmark.id,
+          name: selectedLandmark.name,
+          region: regionData.label,
+        },
       ];
     });
   };
@@ -358,6 +368,17 @@ export default function Main() {
     <div className="main-page">
       {/* 왼쪽 사이드바 */}
       <aside className="main-sidebar">
+        {/* 🔙 나라 다시 선택하기 버튼 */}
+        <div className="sidebar-block">
+          <button
+            className="sidebar-button"
+            onClick={() => navigate("/")}
+            type="button"
+          >
+            나라 다시 선택하기
+          </button>
+        </div>
+
         {/* 국기 + 나라명 */}
         <div className="sidebar-card country-card">
           <div className="country-flag-wrap">
@@ -498,7 +519,7 @@ export default function Main() {
                     }}
                   >
                     최고 {day.temperature_max}℃<br />
-                    최저 {day.temperature_min}℃{" "}
+                    최저 {day.temperature_min}℃
                   </div>
                 </div>
               ))}
@@ -511,7 +532,7 @@ export default function Main() {
           <div className="checklist-title">체크리스트</div>
           <ul className="checklist-list">
             {checklist.length === 0 ? (
-              <li>지도에서 랜드마크를 선택해 주세요.</li>
+              <li>우측 패널에서 랜드마크를 선택해 추가해 주세요.</li>
             ) : (
               checklist.map((item) => (
                 <li key={item.key}>
@@ -557,7 +578,9 @@ export default function Main() {
       >
         {/* 지도 */}
         <div className="map-placeholder">
+          {/* 🔑 나라 + 지역이 바뀔 때마다 재마운트되도록 key 부여 */}
           <MapContainer
+            key={`${countryCode}-${regionData.id}`}
             center={regionData.center}
             zoom={regionData.zoom}
             style={{ width: "100%", height: "100%" }}
@@ -600,6 +623,18 @@ export default function Main() {
               {selectedLandmark
                 ? selectedLandmark.description
                 : "지도의 마커를 클릭하면 선택한 랜드마크 정보가 여기에 표시됩니다."}
+            </div>
+
+            {/* ✅ 랜드마크 추가 버튼 */}
+            <div className="detail-actions">
+              <button
+                className="detail-add-button"
+                type="button"
+                onClick={handleAddSelectedToChecklist}
+                disabled={!selectedLandmark}
+              >
+                여행 일정에 추가하기
+              </button>
             </div>
           </div>
         )}
