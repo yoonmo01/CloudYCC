@@ -50,7 +50,8 @@ def generate_itinerary(
             .filter(models.Landmark.id.in_(body.selected_landmark_ids))
             .all()
         )
-
+    print("[ItinerariesRouter] selected_landmark_ids:", body.selected_landmark_ids)
+    print("[ItinerariesRouter] loaded_landmarks:", [(lm.id, lm.name) for lm in landmarks])
     # 여기서 full_text 는 "ItineraryDetail JSON 문자열" 이라고 가정
     title, full_text = PlannerService.generate_itinerary_text(body, landmarks)
     itinerary = crud.create_itinerary(db, body, ai_title=title, ai_summary=full_text)
@@ -60,6 +61,7 @@ def generate_itinerary(
         country_code=itinerary.country_code,
         region_code=itinerary.region_code,
         days=itinerary.days,
+        start_date=itinerary.start_date,   # 🔹 추가
         theme=itinerary.theme,
         title=itinerary.title,
         ai_summary=itinerary.ai_summary,
@@ -85,6 +87,7 @@ def get_itinerary(
         country_code=itinerary.country_code,
         region_code=itinerary.region_code,
         days=itinerary.days,
+        start_date=itinerary.start_date,   # 🔹 추가
         theme=itinerary.theme,
         title=itinerary.title,
         ai_summary=itinerary.ai_summary,

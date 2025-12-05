@@ -26,7 +26,7 @@ class GeminiService:
             genai.configure(api_key=settings.google_api_key)
 
             # 2. 모델 설정 (필요 시 버전 변경 가능)
-            model = genai.GenerativeModel("gemini-2.5-flash")
+            model = genai.GenerativeModel("gemini-2.5-pro")
 
             # 3. 질문 보내기
             response = model.generate_content(prompt)

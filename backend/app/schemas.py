@@ -124,7 +124,7 @@ class ItineraryOut(BaseModel):
     country_code: str
     region_code: str
     days: int
-    start_date: date             # 🔹 응답에도 시작일 포함
+    start_date: Optional[date] = None             # 🔹 응답에도 시작일 포함
     theme: Optional[str] = None
     title: Optional[str] = None
     ai_summary: str              # 여기에는 Gemini가 만든 JSON 문자열이 들어간다고 보면 됨
@@ -145,10 +145,11 @@ class ItineraryOverview(BaseModel):
 
 
 class ItineraryDayLandmark(BaseModel):
-    landmark_id: int
+    landmark_id: int | None = None   # 🔥 핵심 수정
     name: str
     order: int
     reason: str
+    is_user_selected: bool = False  # ✅ 내가 고른 랜드마크인지 표시
 
 
 class ItineraryDayPlan(BaseModel):
