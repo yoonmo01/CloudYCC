@@ -88,11 +88,6 @@ class WeatherService:
         start_date: date,
         days: int,
     ) -> WeatherForecastResponse:
-        """
-        일정 시작일(start_date)부터 days 일수만큼
-        일별(최고/최저기온 + 날씨상태) 예보 가져오기.
-        """
-        # 예: start=2025-02-10, days=3 → 10, 11, 12일까지
         end_date = start_date + timedelta(days=days - 1)
 
         params = {
@@ -135,17 +130,19 @@ class WeatherService:
                 lat=lat,
                 lon=lon,
                 start_date=start_date,
-                end_date=end_date,
+                end_date=end_date.isoformat(),  # ✅ 문자열로 넣기
                 days=len(items),
                 daily=items,
             )
 
         except Exception as e:
             print(f"Weather Forecast API Error: {e}")
+            # ✅ 실패해도 end_date 채워주기
             return WeatherForecastResponse(
                 lat=lat,
                 lon=lon,
                 start_date=start_date,
+                end_date=end_date.isoformat(),
                 days=0,
                 daily=[],
             )
