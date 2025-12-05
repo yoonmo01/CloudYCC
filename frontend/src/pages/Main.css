@@ -1,0 +1,218 @@
+.main-page {
+  display: flex;
+  height: calc(100vh - 56px); /* 헤더(56px) 높이만큼 빼기 */
+}
+
+/* -------- 왼쪽 사이드바 -------- */
+
+.main-sidebar {
+  width: 260px;
+  background-color: #7b5555;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 공통 카드 스타일 */
+.sidebar-card {
+  background-color: #e5e5e5;
+  border-radius: 2px;
+  padding: 12px;
+}
+
+/* 국기 + 나라명 카드 */
+.country-card {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.country-flag-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  overflow: hidden;
+  background-color: #d1d5db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.country-flag-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.country-name {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* 사이드바 버튼 */
+.sidebar-button {
+  background-color: #e5e5e5;
+  border: none;
+  border-radius: 2px;
+  padding: 12px;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sidebar-button:hover {
+  filter: brightness(0.95);
+}
+
+.date-button {
+  margin-top: 4px;
+}
+
+/* 체크리스트 카드 */
+.checklist-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checklist-title {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.checklist-list {
+  list-style-type: disc;
+  padding-left: 16px;
+  margin: 0;
+}
+
+.checklist-list li {
+  margin-bottom: 12px;
+}
+
+/* 생성하기 버튼 (아래쪽 배치) */
+.generate-button {
+  margin-top: auto;
+  background-color: #e5e5e5;
+  border: none;
+  border-radius: 2px;
+  padding: 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.generate-button:hover {
+  filter: brightness(0.95);
+}
+
+/* -------- 오른쪽 지도 + 상세 패널 영역 -------- */
+
+.main-map-area {
+  position: relative; /* 상세 패널/토글 absolute 기준 */
+  flex: 1;
+  background-color: #f3f4f6;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.map-placeholder {
+  width: 90%;
+  height: 90%;
+  background-color: #d1d5db;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.map-placeholder-text {
+  color: #4b5563;
+  font-size: 14px;
+}
+
+/* 오른쪽 작은 토글 바 */
+
+.detail-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0; /* 닫힌 상태: 화면 오른쪽 끝 */
+  transform: translateY(-50%);
+  width: 18px;
+  height: 80px;
+  border: none;
+  background-color: #7b5555;
+  color: #f9fafb;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px 0 0 4px;
+  z-index: 30; /* 패널 위에 보이게 */
+}
+
+/* 열려 있을 때: 패널 왼쪽 가장 자리로 이동 */
+.detail-toggle.open {
+  right: 28%; /* detail-panel 너비와 동일하게 */
+  border-radius: 0 4px 4px 0; /* 모양 반대로 */
+}
+
+.detail-toggle:hover {
+  filter: brightness(0.9);
+}
+
+/* 상세 패널 */
+
+.detail-panel {
+  position: absolute;
+  top: 8%;
+  right: 0;
+  width: 28%;
+  height: 84%;
+  background-color: #7b5555;
+  padding: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  z-index: 20;
+}
+
+/* 상단: 사진 + 이름 */
+
+.detail-top {
+  display: flex;
+  gap: 12px;
+  height: 40%;
+}
+
+.detail-photo-box {
+  flex: 2;
+  background-color: #e5e5e5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.detail-name-box {
+  flex: 1;
+  background-color: #e5e5e5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+/* 하단: 정보 박스 */
+
+.detail-info-box {
+  flex: 1;
+  background-color: #e5e5e5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
