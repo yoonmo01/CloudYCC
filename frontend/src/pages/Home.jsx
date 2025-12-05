@@ -1,25 +1,69 @@
 // src/pages/Home.jsx
-import React from "react";
-import { useNavigate } from "react-router-dom";   // ✅ 추가
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Home.css";
 
 import JapanFlag from "../assets/flags/jp.svg";
 import UKFlag from "../assets/flags/uk.svg";
 import ThailandFlag from "../assets/flags/th.svg";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+
+// 백엔드에서 오는 코드(JP/TH/UK)에 맞춰 국기/라벨 매핑
+const COUNTRY_FLAG_META = {
+  JP: { label: "일본", flag: JapanFlag },
+  TH: { label: "태국", flag: ThailandFlag },
+  UK: { label: "영국", flag: UKFlag },
+};
+
 export default function Home() {
-  const navigate = useNavigate();  // ✅ 훅 사용
+  const navigate = useNavigate();
 
-  const countries = [
-    { key: "japan", label: "일본", flag: JapanFlag },
-    { key: "uk", label: "영국", flag: UKFlag },
-    { key: "thailand", label: "태국", flag: ThailandFlag },
-  ];
+  // UI 구조는 그대로 두고, 데이터만 상태로 관리
+  const [countries, setCountries] = useState([
+    // 초기 로딩 전에 보여줄 기본 값 (백엔드 실패 시에도 fallback)
+    { key: "JP", label: "일본", flag: JapanFlag },
+    { key: "UK", label: "영국", flag: UKFlag },
+    { key: "TH", label: "태국", flag: ThailandFlag },
+  ]);
 
-  // ✅ 클릭 시 main으로 이동 (나중에 country 정보도 같이 쓸 수 있음)
-  const handleClick = (code) => {
-    // 단순히 main으로만 가고 싶으면: navigate("/main");
-    navigate(`/main?country=${code}`);
+  useEffect(() => {
+    const fetchCountries = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/countries`);
+        if (!res.ok) {
+          console.error("Failed to fetch countries", res.status);
+          return;
+        }
+        const data = await res.json(); // [{ code: "JP", name: "일본" }, ...]
+
+        const mapped = data
+          .map((c) => {
+            const meta = COUNTRY_FLAG_META[c.code];
+            if (!meta) return null;
+            return {
+              key: c.code,          // JP / TH / UK
+              label: c.name,        // "일본" 등 (백엔드에서 온 name 사용)
+              flag: meta.flag,
+            };
+          })
+          .filter(Boolean);
+
+        if (mapped.length > 0) {
+          setCountries(mapped);
+        }
+      } catch (err) {
+        console.error("Error fetching countries:", err);
+      }
+    };
+
+    fetchCountries();
+  }, []);
+
+  // 클릭 시 main으로 이동
+  const handleClick = (countryCode) => {
+    // 백엔드는 JP/TH/UK 코드 사용
+    navigate(`/main?country=${countryCode}`);
   };
 
   return (
@@ -35,7 +79,7 @@ export default function Home() {
             <div key={c.key} className="country-item">
               <button
                 className="country-circle"
-                onClick={() => handleClick(c.key)}   // ✅ 여기서 이동
+                onClick={() => handleClick(c.key)}
               >
                 <img src={c.flag} alt={c.label} className="country-flag" />
               </button>

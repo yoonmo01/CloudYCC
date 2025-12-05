@@ -357,3 +357,48 @@
   color: #555;
   line-height: 1.4;
 }
+
+/* 일정 생성 전체 화면 오버레이 */
+.generate-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999; /* 다른 것들 위로 */
+}
+
+.generate-overlay-box {
+  background: #ffffff;
+  padding: 18px 28px;
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  min-width: 260px;
+}
+
+/* 동그란 스피너 */
+.generate-spinner {
+  width: 26px;
+  height: 26px;
+  border-radius: 9999px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #2563eb;
+  animation: generate-spin 0.8s linear infinite;
+}
+
+.generate-overlay-text {
+  font-size: 14px;
+  color: #111827;
+}
+
+/* 회전 애니메이션 */
+@keyframes generate-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
