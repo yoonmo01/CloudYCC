@@ -1,6 +1,6 @@
 # backend/app/models.py
 from datetime import datetime
-
+from sqlalchemy.sql import func
 from sqlalchemy import (
     Column,
     Integer,
@@ -8,6 +8,7 @@ from sqlalchemy import (
     Float,
     Text,
     DateTime,
+    Date
 )
 from app.db.base import Base
 
@@ -28,19 +29,15 @@ class Itinerary(Base):
     __tablename__ = "itineraries"
 
     id = Column(Integer, primary_key=True, index=True)
-    country_code = Column(String(2), index=True)
-    region_code = Column(String(50), index=True)
-    days = Column(Integer, nullable=False)
-    theme = Column(String(50), nullable=True)
-
-    # 사용자가 선택한 랜드마크 id들을 콤마로 저장 (예: "1,5,8")
-    selected_landmark_ids = Column(String(500), nullable=True)
-
-    # AI가 생성한 일정(그냥 텍스트 통짜)
-    title = Column(String(200), nullable=True)
-    ai_summary = Column(Text, nullable=False)
-
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    country_code = Column(String, index=True)
+    region_code = Column(String, index=True)
+    days = Column(Integer)
+    start_date = Column(Date, nullable=True)       # ✅ 새로 추가
+    theme = Column(String, nullable=True)
+    selected_landmark_ids = Column(String, nullable=True)  # "121,123,130"
+    title = Column(String, nullable=True)
+    ai_summary = Column(Text, nullable=False)      # 여기 안에 ItineraryDetail JSON 문자열
+    created_at = Column(DateTime, server_default=func.now())
 
 class JapanRestaurant(Base):
     __tablename__ = "japan_restaurants"
