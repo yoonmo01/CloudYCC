@@ -1,21 +1,29 @@
+# backend/app/services/gemini_service.py
 import google.generativeai as genai
+
 from app.schemas import GeminiResponse
+from app.core.config import settings
+
 
 class GeminiService:
-    API_KEY = "AIzaSyDOi4tp4nkTApsGshPyJDhEGmpUPNiYHRI" 
-
     @staticmethod
     def get_chat_response(prompt: str) -> GeminiResponse:
         try:
-            # 1. API 키 설정
-            genai.configure(api_key=GeminiService.API_KEY)
-            
-            # 2. 모델 설정 (gemini-1.5-flash 가 빠르고 무료로 쓰기 좋습니다)
-            model = genai.GenerativeModel('gemini-2.0-flash-exp')
-            
+            # 1. API 키 설정 (.env의 GOOGLE_API_KEY 사용)
+            if not settings.google_api_key:
+                # 키가 없으면 바로 에러 메시지 리턴
+                return GeminiResponse(
+                    answer="서버에 GOOGLE_API_KEY가 설정되어 있지 않아 AI 응답을 생성할 수 없습니다."
+                )
+
+            genai.configure(api_key=settings.google_api_key)
+
+            # 2. 모델 설정
+            model = genai.GenerativeModel("gemini-2.5-flash")
+
             # 3. 질문 보내기
             response = model.generate_content(prompt)
-            
+
             # 4. 답변 텍스트만 추출해서 반환
             return GeminiResponse(answer=response.text)
 

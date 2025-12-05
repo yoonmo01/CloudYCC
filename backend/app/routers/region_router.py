@@ -20,8 +20,8 @@ REGION_DATA = {
     ],
     "UK": [
         Region(code="london", name="런던", country_code="UK"),
-        Region(code="edinburgh", name="에든버러", country_code="UK"),
         Region(code="manchester", name="맨체스터", country_code="UK"),
+        Region(code="liverpool", name="리버풀", country_code="UK"),
     ],
 }
 

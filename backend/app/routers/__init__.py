@@ -8,6 +8,7 @@ from app.routers.itineraries_router import router as itineraries_router
 from app.routers.checklist_router import router as checklist_router
 from app.routers.weather_router import router as weather_router
 from app.routers.gemini_router import router as gemini_router
+from .travel_router import router as travel_router
 
 api_router = APIRouter()
 
@@ -18,3 +19,4 @@ api_router.include_router(itineraries_router, prefix="/itineraries", tags=["itin
 api_router.include_router(checklist_router, prefix="/checklist", tags=["checklist"])
 api_router.include_router(weather_router, prefix="/weather", tags=["weather"])
 api_router.include_router(gemini_router, prefix="/gemini", tags=["gemini"])
+api_router.include_router(travel_router, prefix="/travel", tags=["travel"])

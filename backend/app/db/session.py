@@ -4,6 +4,8 @@ from sqlalchemy.orm import sessionmaker
 
 from app.core.config import settings
 
+print(">>> DATABASE_URL from settings:", settings.database_url)  # 🔥 요 줄 추가
+
 engine = create_engine(
     settings.database_url,
     future=True,

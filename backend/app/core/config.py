@@ -6,12 +6,13 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     project_name: str = "CloudYCC Project"
 
-    # ▶ 반드시 .env에서 바꿔서 써줘
-    # 예: postgresql+psycopg2://cloudycc:cloudycc@localhost:5432/cloudycc
-    database_url: str = "postgresql+psycopg2://user:password@localhost:5432/cloudycc"
+    # .env 에서 읽어올 값들
+    database_url: str                    # DATABASE_URL=...
+    google_api_key: str | None = None    # GOOGLE_API_KEY=...
 
     class Config:
         env_file = ".env"
+        env_file_encoding = "utf-8"
 
 
 @lru_cache

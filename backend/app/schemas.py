@@ -74,8 +74,14 @@ class LandmarkUpdate(BaseModel):
     theme: Optional[str] = None
 
 
-class LandmarkOut(LandmarkBase):
+class LandmarkOut(BaseModel):
     id: int
+    country: str      # "일본", "태국", "영국"
+    region: str       # "도쿄", "방콕", "런던" 등
+    name: str
+    description: Optional[str] = None
+    lng: float
+    lat: float
 
     class Config:
         from_attributes = True
@@ -114,3 +120,48 @@ class ChecklistItem(BaseModel):
     id: int
     text: str
     category: str  # "공통", "일본", "태국", "영국" 등
+
+class JapanRestaurantOut(BaseModel):
+    id: int
+    region: str
+    name: str
+    rating: Optional[float]
+    lng: Optional[float]
+    lat: Optional[float]
+    signature_menu: Optional[str]
+    opening_hours: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+
+class ThailandActivityOut(BaseModel):
+    id: int
+    region: str
+    name: str
+    description: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+
+class UkMuseumOut(BaseModel):
+    id: int
+    region: str
+    name: str
+    opening_info: Optional[str]
+    description: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+
+class TravelOverview(BaseModel):
+    country_code: str
+    region_code: str
+    country_name: str
+    region_name: str
+    landmarks: List[LandmarkOut]
+    restaurants: List[JapanRestaurantOut] = []
+    activities: List[ThailandActivityOut] = []
+    museums: List[UkMuseumOut] = []
