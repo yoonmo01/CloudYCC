@@ -1,6 +1,6 @@
 # backend/app/schemas.py
 from typing import List, Optional
-
+from datetime import date
 from pydantic import BaseModel
 
 
@@ -20,6 +20,21 @@ class WeatherResponse(BaseModel):
     status: str             # 간단 상태 (맑음, 흐림, 비 등)
     description: str        # 상세 설명 (예: "활동하기 좋은 날씨입니다")
     icon_type: str          # 프론트에서 아이콘 띄울 때 쓸 구분값 (sunny, cloudy, rainy 등)
+
+class WeatherDaily(BaseModel):
+    date: date
+    temperature_max: float
+    temperature_min: float
+    status: str
+    icon_type: str
+
+class WeatherForecastResponse(BaseModel):
+    lat: float
+    lon: float
+    start_date: date
+    end_date: str
+    days: int
+    daily: List[WeatherDaily]
 
 
 # ─────────────────────────────
@@ -45,6 +60,8 @@ class Region(BaseModel):
     code: str           # "tokyo", "osaka", ...
     name: str           # "도쿄", ...
     country_code: str   # JP/TH/UK
+    lat: float
+    lon: float
 
 
 # ─────────────────────────────
