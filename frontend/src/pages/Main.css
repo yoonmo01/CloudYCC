@@ -86,28 +86,139 @@
   position: relative;
 }
 
-/* 체크리스트 카드 */
+/* ===== 체크리스트 카드 ===== */
 
 .checklist-card {
   flex: 1;
   display: flex;
   flex-direction: column;
   margin-top: 8px;
+  padding: 14px 14px 12px;
+  /* 🔑 flex 레이아웃 안에서 자식 스크롤이 제대로 동작하도록 */
+  min-height: 0;
+}
+
+.checklist-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .checklist-title {
   font-size: 14px;
   font-weight: 600;
-  margin-bottom: 8px;
+  color: #111827;
+}
+
+.checklist-subtitle {
+  margin-top: 2px;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.checklist-count-badge {
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #111827;
+  color: #f9fafb;
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checklist-empty {
+  margin-top: 4px;
+  padding: 12px 10px;
+  border-radius: 10px;
+  background: #f9fafb;
+  text-align: center;
+  font-size: 12px;
+  color: #6b7280;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.checklist-empty-icon {
+  font-size: 20px;
 }
 
 .checklist-list {
-  list-style: disc;
-  margin: 0;
-  margin-left: 18px;
+  list-style: none;
+  margin: 4px 0 0;
   padding: 0;
-  font-size: 12px;
-  color: #444;
+  /* 🔑 남은 높이를 전부 차지하게 하고, 그 안에서만 스크롤 */
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 9px;
+  border-radius: 9px;
+  background: #f3f4f6;
+}
+
+.checklist-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.checklist-item-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.checklist-item-region-pill {
+  align-self: flex-start;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  color: #4b5563;
+}
+
+.checklist-remove-btn {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.checklist-remove-btn:hover {
+  background: #fecaca;
+}
+
+.checklist-remove-btn:focus-visible {
+  outline: 2px solid #f97316;
+  outline-offset: 2px;
 }
 
 /* ==== 여행 테마 카드 ==== */

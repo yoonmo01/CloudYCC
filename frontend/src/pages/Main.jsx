@@ -601,24 +601,47 @@ export default function Main() {
 
         {/* 체크리스트 */}
         <div className="sidebar-card checklist-card">
-          <div className="checklist-title">체크리스트</div>
-          <ul className="checklist-list">
-            {checklist.length === 0 ? (
-              <li>우측 패널에서 랜드마크를 선택해 추가해 주세요.</li>
-            ) : (
-              checklist.map((item) => (
-                <li key={item.key}>
-                  {item.region} - {item.name}
+          <div className="checklist-header">
+            <div>
+              <div className="checklist-title">체크리스트</div>
+              <div className="checklist-subtitle">
+                선택한 랜드마크를 한눈에 관리해요
+              </div>
+            </div>
+            <div className="checklist-count-badge">{checklist.length}</div>
+          </div>
+
+          {checklist.length === 0 ? (
+            <div className="checklist-empty">
+              <span className="checklist-empty-icon">🗺️</span>
+              <p>
+                지도의 랜드마크를 선택해서
+                <br />
+                나만의 여행 코스를 만들어 보세요.
+              </p>
+            </div>
+          ) : (
+            <ul className="checklist-list">
+              {checklist.map((item) => (
+                <li className="checklist-item" key={item.key}>
+                  <div className="checklist-item-main">
+                    <div className="checklist-item-name">{item.name}</div>
+                    <div className="checklist-item-region-pill">
+                      {item.region}
+                    </div>
+                  </div>
                   <button
                     className="checklist-remove-btn"
                     onClick={() => handleChecklistRemove(item.key)}
+                    type="button"
+                    aria-label={`${item.name} 삭제`}
                   >
                     ✕
                   </button>
                 </li>
-              ))
-            )}
-          </ul>
+              ))}
+            </ul>
+          )}
         </div>
 
         {/* 생성하기 버튼 + 에러 표시 */}
@@ -677,18 +700,12 @@ export default function Main() {
 
         {/* 오른쪽 토글 바 */}
         {isDetailOpen && (
-          <button
-            className={`detail-toggle open`}
-            onClick={toggleDetail}
-          >
+          <button className="detail-toggle open" onClick={toggleDetail}>
             ▶
           </button>
         )}
         {!isDetailOpen && (
-          <button
-            className="detail-toggle"
-            onClick={toggleDetail}
-          >
+          <button className="detail-toggle" onClick={toggleDetail}>
             ◀
           </button>
         )}
