@@ -3,13 +3,16 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import "./Main.css";
 
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 import JapanFlag from "../assets/flags/jp.svg";
 import UKFlag from "../assets/flags/uk.svg";
 import ThailandFlag from "../assets/flags/th.svg";
+
+// ✅ S3 이미지 베이스 URL
+import { S3_LANDMARK_BASE_URL } from "../config/s3";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
@@ -28,6 +31,22 @@ const COUNTRY_META = {
   UK: { label: "영국", flag: UKFlag },
   TH: { label: "태국", flag: ThailandFlag },
 };
+
+// ✅ 나라별 기본 테마
+const DEFAULT_THEME_BY_COUNTRY = {
+  JP: "food", // 음식
+  TH: "activity", // 액티비티
+  UK: "museum", // 박물관
+};
+
+// ✅ 선택 가능한 여행 테마 5가지
+const THEME_OPTIONS = [
+  { key: "food", label: "음식" },
+  { key: "activity", label: "액티비티" },
+  { key: "museum", label: "박물관" },
+  { key: "shopping", label: "쇼핑" },
+  { key: "nature", label: "자연/휴식" },
+];
 
 // 날씨 아이콘 타입 → 이모지 매핑 (백엔드 icon_type 기준)
 const WEATHER_ICON_EMOJI = {
@@ -48,6 +67,23 @@ function calcDays(startDate, endDate) {
   const diffMs = end.getTime() - start.getTime();
   const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24)) + 1;
   return diffDays > 0 ? diffDays : 1;
+}
+
+function MapResizer({ isDetailOpen }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!map) return;
+
+    // 패널 열고/닫는 애니메이션이 끝난 뒤에 사이즈 다시 계산
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [isDetailOpen, map]);
+
+  return null;
 }
 
 export default function Main() {
@@ -98,6 +134,16 @@ export default function Main() {
   // 🔥 일정 생성 로딩/에러 상태
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateError, setGenerateError] = useState("");
+
+  // ✅ 여행 테마 상태
+  const [theme, setTheme] = useState(
+    DEFAULT_THEME_BY_COUNTRY[countryCode] || "food"
+  );
+
+  // 나라가 바뀔 때 기본 테마도 같이 변경
+  useEffect(() => {
+    setTheme(DEFAULT_THEME_BY_COUNTRY[countryCode] || "food");
+  }, [countryCode]);
 
   // 🔒 출발일 & 도착일이 둘 다 채워지면 date 패널 자동 닫기
   useEffect(() => {
@@ -182,6 +228,12 @@ export default function Main() {
         id: lm.id,
         name: lm.name,
         description: lm.description,
+        // 🔥 새로 채운 필드들도 함께 내려받아서 보관
+        description_long: lm.description_long,
+        highlight_points: lm.highlight_points,
+        best_time: lm.best_time,
+        recommended_duration: lm.recommended_duration,
+        local_tip: lm.local_tip,
         lat: lm.lat,
         lng: lm.lng,
       })) || [];
@@ -252,6 +304,11 @@ export default function Main() {
   // 생성하기 버튼: 날짜 + 체크리스트 둘 다 있어야 활성화
   const canGenerate = startDate && endDate && checklist.length > 0;
 
+  // ✅ 선택된 랜드마크의 이미지 URL (S3)
+  const landmarkImageUrl = selectedLandmark
+    ? `${S3_LANDMARK_BASE_URL}/${selectedLandmark.id}.png`
+    : null;
+
   // ✅ 일정 생성하기 → 백엔드 /itineraries/generate 호출
   const handleGenerateClick = async () => {
     if (!canGenerate || isGenerating) return;
@@ -271,13 +328,8 @@ export default function Main() {
       region_code: regionKey, // tokyo / bangkok / london ...
       days: diffDays,
       start_date: startDate, // "YYYY-MM-DD"
-      // 테마는 국가 기준으로 간단 매핑 (원하면 나중에 UI에서 직접 선택 가능)
-      theme:
-        countryCode === "JP"
-          ? "food"
-          : countryCode === "TH"
-          ? "activity"
-          : "museum",
+      // ✅ 사용자가 선택한 테마를 그대로 전송
+      theme: theme || DEFAULT_THEME_BY_COUNTRY[countryCode] || "food",
       selected_landmark_ids: selectedLandmarkIds,
     };
 
@@ -307,6 +359,7 @@ export default function Main() {
           startDate,
           endDate,
           checklist,
+          theme, // 선택한 테마도 넘겨주면 나중에 리포트 페이지에서 보여줄 수 있음
         },
       });
     } catch (e) {
@@ -415,6 +468,25 @@ export default function Main() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* ✅ 여행 테마 선택 카드 */}
+        <div className="sidebar-card theme-card">
+          <div className="theme-title">여행 테마</div>
+          <div className="theme-chip-wrap">
+            {THEME_OPTIONS.map((opt) => (
+              <button
+                key={opt.key}
+                type="button"
+                className={`theme-chip ${
+                  theme === opt.key ? "theme-chip-active" : ""
+                }`}
+                onClick={() => setTheme(opt.key)}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* 날짜 버튼 + date picker 패널 + 날씨 확인 버튼 */}
@@ -585,6 +657,7 @@ export default function Main() {
             zoom={regionData.zoom}
             style={{ width: "100%", height: "100%" }}
           >
+            <MapResizer isDetailOpen={isDetailOpen} />
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
             {regionData.landmarks.map((lm) => (
@@ -603,29 +676,145 @@ export default function Main() {
         </div>
 
         {/* 오른쪽 토글 바 */}
-        <button
-          className={`detail-toggle ${isDetailOpen ? "open" : ""}`}
-          onClick={toggleDetail}
-        >
-          {isDetailOpen ? "▶" : "◀"}
-        </button>
+        {isDetailOpen && (
+          <button
+            className={`detail-toggle open`}
+            onClick={toggleDetail}
+          >
+            ▶
+          </button>
+        )}
+        {!isDetailOpen && (
+          <button
+            className="detail-toggle"
+            onClick={toggleDetail}
+          >
+            ◀
+          </button>
+        )}
 
         {/* 상세 패널 */}
         {isDetailOpen && (
           <div className="detail-panel">
-            <div className="detail-top">
-              <div className="detail-photo-box">사진</div>
-              <div className="detail-name-box">
-                {selectedLandmark ? selectedLandmark.name : "랜드마크 이름"}
+            {/* 상단: 사진 + 제목 */}
+            <div className="detail-header">
+              <div className="detail-photo-box">
+                {landmarkImageUrl ? (
+                  <img
+                    src={landmarkImageUrl}
+                    alt={selectedLandmark?.name || "랜드마크 사진"}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = "/fallback-landmark.png";
+                    }}
+                  />
+                ) : (
+                  <span>사진 없음</span>
+                )}
+              </div>
+
+              <div className="detail-header-text">
+                <div className="detail-name-box">
+                  {selectedLandmark ? selectedLandmark.name : "랜드마크 이름"}
+                </div>
+                {selectedLandmark && (
+                  <div className="detail-chip-row">
+                    <span className="detail-chip-region">{regionData.label}</span>
+                  </div>
+                )}
               </div>
             </div>
-            <div className="detail-info-box">
-              {selectedLandmark
-                ? selectedLandmark.description
-                : "지도의 마커를 클릭하면 선택한 랜드마크 정보가 여기에 표시됩니다."}
+
+            {/* 가운데: 스크롤 가능한 정보 영역 */}
+            <div className="detail-scroll">
+              <div className="detail-info-box">
+                {!selectedLandmark && (
+                  <p className="detail-empty-text">
+                    지도의 마커를 클릭하면 선택한 랜드마크 정보가 여기에 표시됩니다.
+                  </p>
+                )}
+
+                {selectedLandmark && (
+                  <>
+                    {/* 🔹 메인 상세 설명 */}
+                    <section className="detail-section">
+                      <h3 className="detail-section-title">소개</h3>
+                      <p className="detail-main-text">
+                        {selectedLandmark.description_long ||
+                          selectedLandmark.description ||
+                          "상세 설명이 준비 중입니다."}
+                      </p>
+                    </section>
+
+                    {/* 🔹 하이라이트 포인트 리스트 */}
+                    {(() => {
+                      const raw = selectedLandmark.highlight_points;
+                      const points = Array.isArray(raw)
+                        ? raw
+                        : (raw || "")
+                            .split("\n")
+                            .map((s) => s.trim())
+                            .filter(Boolean);
+
+                      if (!points.length) return null;
+
+                      return (
+                        <section className="detail-section">
+                          <h3 className="detail-section-title">주요 포인트</h3>
+                          <ul className="detail-point-list">
+                            {points.map((p, idx) => (
+                              <li key={idx}>{p}</li>
+                            ))}
+                          </ul>
+                        </section>
+                      );
+                    })()}
+
+                    {/* 🔹 방문 시간 / 추천 체류 시간 */}
+                    {(selectedLandmark.best_time ||
+                      selectedLandmark.recommended_duration) && (
+                      <section className="detail-section">
+                        <h3 className="detail-section-title">방문 정보</h3>
+                        <div className="detail-visit-box">
+                          {selectedLandmark.best_time && (
+                            <div>
+                              <span className="detail-visit-label">
+                                추천 방문 시간대
+                              </span>
+                              <span className="detail-visit-value">
+                                {selectedLandmark.best_time}
+                              </span>
+                            </div>
+                          )}
+                          {selectedLandmark.recommended_duration && (
+                            <div>
+                              <span className="detail-visit-label">
+                                권장 체류 시간
+                              </span>
+                              <span className="detail-visit-value">
+                                {selectedLandmark.recommended_duration}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </section>
+                    )}
+
+                    {/* 🔹 로컬 팁 */}
+                    {selectedLandmark.local_tip && (
+                      <section className="detail-section">
+                        <h3 className="detail-section-title">현지 꿀팁</h3>
+                        <p className="detail-tip-text">
+                          {selectedLandmark.local_tip}
+                        </p>
+                      </section>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
 
-            {/* ✅ 랜드마크 추가 버튼 */}
+            {/* 하단: 버튼 영역 */}
             <div className="detail-actions">
               <button
                 className="detail-add-button"

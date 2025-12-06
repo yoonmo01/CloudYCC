@@ -96,15 +96,23 @@ class LandmarkUpdate(BaseModel):
 
 class LandmarkOut(BaseModel):
     id: int
-    country: str      # "일본", "태국", "영국"
-    region: str       # "도쿄", "방콕", "런던" 등
+    country: str
+    region: str
     name: str
     description: Optional[str] = None
+
+    # 🔥 새로 추가된 필드들
+    description_long: Optional[str] = None
+    highlight_points: Optional[str] = None  # JSON에선 \n으로 join 했으니까 str로 받기
+    best_time: Optional[str] = None
+    recommended_duration: Optional[str] = None
+    local_tip: Optional[str] = None
+
     lng: float
     lat: float
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 # ─────────────────────────────

@@ -30,8 +30,43 @@ export default function Report() {
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState("");
 
+  // 🔥 추가: 나라별 맛집/액티비티/박물관용 overview
+  const [travelOverview, setTravelOverview] = useState(null);
+  const [travelLoading, setTravelLoading] = useState(false);
+  const [travelError, setTravelError] = useState("");
+
   const itineraryId = data?.itineraryId ?? null;
 
+  // 🔽 CSV 다운로드 핸들러 추가
+  const handleDownloadCsv = async () => {
+    if (!itineraryId) return;
+
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/itineraries/${itineraryId}/csv`
+      );
+
+      if (!res.ok) {
+        alert("CSV 다운로드에 실패했습니다.");
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `itinerary_report_${itineraryId}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error("CSV 다운로드 오류:", e);
+      alert("CSV 다운로드 중 오류가 발생했습니다.");
+    }
+  };
   // Main에서 제대로 안 넘어온 경우
   if (!data) {
     return (
@@ -54,6 +89,7 @@ export default function Report() {
     countryCode,
     countryLabel,
     regionLabel,
+    regionKey, // 🔥 Main에서 state로 넘긴 값 사용
     startDate,
     endDate,
     checklist,
@@ -64,6 +100,7 @@ export default function Report() {
     flag: null,
   };
 
+  // ====== 1) AI 리포트(detail) 가져오기 ======
   useEffect(() => {
     if (!itineraryId) return;
 
@@ -95,10 +132,83 @@ export default function Report() {
     fetchReport();
   }, [itineraryId]);
 
+  // ====== 2) 나라별 맛집/액티비티/박물관 overview 가져오기 ======
+  useEffect(() => {
+    if (!countryCode || !regionKey) return;
+
+    const fetchOverview = async () => {
+      try {
+        setTravelLoading(true);
+        setTravelError("");
+
+        const params = new URLSearchParams({
+          country_code: countryCode,
+          region_code: regionKey,
+        }).toString();
+
+        const res = await fetch(
+          `${API_BASE_URL}/api/travel/overview?${params}`
+        );
+
+        if (!res.ok) {
+          console.error("Failed to fetch travel overview", res.status);
+          setTravelError("추가 추천 정보를 가져오지 못했습니다.");
+          return;
+        }
+
+        const json = await res.json(); // TravelOverview
+        setTravelOverview(json);
+      } catch (e) {
+        console.error("Error fetching travel overview", e);
+        setTravelError("추가 추천 정보를 가져오는 중 오류가 발생했습니다.");
+      } finally {
+        setTravelLoading(false);
+      }
+    };
+
+    fetchOverview();
+  }, [countryCode, regionKey]);
+
   const detail = reportData?.detail || null;
   const overview = detail?.overview || null;
   const dailyPlan = detail?.daily_plan || [];
   const tips = detail?.tips || {};
+
+  // ⬇ 선택된 랜드마크(id)가 daily_plan에서 어느 Day에 배치되었는지 매핑
+  const selectedPlanById = {};
+  dailyPlan.forEach((day) => {
+    if (!day || !Array.isArray(day.landmarks)) return;
+    day.landmarks.forEach((lm) => {
+      if (!lm || !lm.is_user_selected) return;
+      const lmId = lm.landmark_id;
+      if (typeof lmId !== "number") return;
+
+      if (!selectedPlanById[lmId]) {
+        selectedPlanById[lmId] = {
+          day: day.day,
+          dayTitle: day.title,
+          reason: lm.reason,
+        };
+      }
+    });
+  });
+
+  // 🔥 나라별로 어떤 리스트를 쓸지 결정
+  let extraTitle = "";
+  let extraList = [];
+
+  if (travelOverview) {
+    if (countryCode === "JP") {
+      extraTitle = "이 지역 추천 맛집";
+      extraList = travelOverview.restaurants || [];
+    } else if (countryCode === "TH") {
+      extraTitle = "이 지역 추천 액티비티";
+      extraList = travelOverview.activities || [];
+    } else if (countryCode === "UK") {
+      extraTitle = "이 지역 추천 박물관";
+      extraList = travelOverview.museums || [];
+    }
+  }
 
   return (
     <div className="report-page">
@@ -148,18 +258,29 @@ export default function Report() {
       {/* 오른쪽 결과 영역 */}
       <section className="report-main">
         <header className="report-header">
-          <h1>{regionLabel} 여행 리포트</h1>
-          <p>
-            {startDate} ~ {endDate} · {meta.label}
-          </p>
+          <div>
+            <h1>{regionLabel} 여행 리포트</h1>
+            <p>
+              {startDate} ~ {endDate} · {meta.label}
+            </p>
+          </div>
+          <button
+            type="button"
+            className="report-download-btn"
+            onClick={handleDownloadCsv}
+          >
+            CSV 다운로드
+          </button>
         </header>
 
-        {/* ✅ 여행 요약 섹션 (AI overview 있으면 그걸 쓰고, 없으면 기존 더미) */}
+        {/* ✅ 여행 요약 섹션 */}
         <div className="report-section">
           <h2>여행 요약</h2>
 
           {reportLoading && (
-            <p className="report-summary-text">AI 여행 요약을 불러오는 중입니다...</p>
+            <p className="report-summary-text">
+              AI 여행 요약을 불러오는 중입니다...
+            </p>
           )}
 
           {reportError && (
@@ -314,21 +435,148 @@ export default function Report() {
           </div>
         )}
 
-        {/* 선택 랜드마크 상세 리스트 (그대로 유지) */}
+        {/* 🔥 나라별 추가 추천 섹션 (맛집 / 액티비티 / 박물관) */}
+        {(travelLoading || travelError || (extraTitle && extraList.length > 0)) && (
+          <div className="report-section">
+            <h2>{extraTitle || "이 지역 추가 추천"}</h2>
+
+            {travelLoading && (
+              <p className="report-summary-text">
+                추가 추천 정보를 불러오는 중입니다...
+              </p>
+            )}
+
+            {travelError && (
+              <p className="report-summary-text">{travelError}</p>
+            )}
+
+            {!travelLoading && !travelError && extraList.length > 0 && (
+              <div className="report-landmark-grid">
+                {extraList.map((item) => {
+                  // 🇯🇵 일본: 맛집 전용 표시
+                  if (countryCode === "JP") {
+                    return (
+                      <div key={item.id} className="report-landmark-card">
+                        <div className="report-landmark-title">
+                          {/* 예: 도쿄 · 오쿠린도 */}
+                          {item.region ? `${item.region} · ${item.name}` : item.name}
+                        </div>
+                        <div className="report-landmark-desc">
+                          {item.rating && (
+                            <div style={{ marginBottom: "4px", fontSize: "13px" }}>
+                              ⭐ 평점: {item.rating}
+                            </div>
+                          )}
+                          {item.signature_menu && (
+                            <div style={{ marginBottom: "4px", fontSize: "13px" }}>
+                              🍽 대표 메뉴: {item.signature_menu}
+                            </div>
+                          )}
+                          {item.opening_hours && (
+                            <div style={{ marginBottom: "4px", fontSize: "13px" }}>
+                              🕒 영업시간: {item.opening_hours}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // 🇹🇭 태국: 액티비티 전용 표시
+                  if (countryCode === "TH") {
+                    const activityName =
+                      item.name || item.activity_name || "액티비티";
+                    return (
+                      <div key={item.id} className="report-landmark-card">
+                        <div className="report-landmark-title">
+                          {item.region ? `${item.region} · ${activityName}` : activityName}
+                        </div>
+                        <div className="report-landmark-desc">
+                          {item.description || "상세 설명이 준비 중입니다."}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // 🇬🇧 영국: 박물관 전용 표시
+                  if (countryCode === "UK") {
+                    const museumName =
+                      item.name || item.museum_name || "박물관";
+                    return (
+                      <div key={item.id} className="report-landmark-card">
+                        <div className="report-landmark-title">
+                          {item.region
+                            ? `${item.region} · ${museumName}`
+                            : museumName}
+                        </div>
+                        <div className="report-landmark-desc">
+                          {item.opening_hours && (
+                            <div style={{ marginBottom: "4px", fontSize: "13px" }}>
+                              🕒 운영시간 & 휴무일: {item.opening_hours}
+                            </div>
+                          )}
+                          <div>
+                            {item.description || "상세 설명이 준비 중입니다."}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // 🔁 기타/예외: 기존 generic 표시 (혹시 다른 나라 추가될 때 대비)
+                  return (
+                    <div key={item.id} className="report-landmark-card">
+                      <div className="report-landmark-title">
+                        {item.name || item.title}
+                      </div>
+                      <div className="report-landmark-desc">
+                        {item.description || item.summary || "상세 설명이 준비 중입니다."}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {!travelLoading && !travelError && travelOverview && extraList.length === 0 && (
+              <p className="report-summary-text">
+                이 지역에 대한 추가 추천 데이터가 아직 준비되지 않았습니다.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* ✅ 선택 랜드마크 상세 리스트: 실제 AI 일정 기준으로 표시 */}
         <div className="report-section">
           <h2>선택한 랜드마크 목록</h2>
           <div className="report-landmark-grid">
-            {checklist.map((item, idx) => (
-              <div key={item.key} className="report-landmark-card">
-                <div className="report-landmark-title">
-                  Day {idx + 1}. {item.name}
+            {checklist.map((item) => {
+              const plan = selectedPlanById[item.id];
+              const hasPlan = !!plan;
+
+              return (
+                <div key={item.key} className="report-landmark-card">
+                  <div className="report-landmark-title">
+                    {hasPlan ? `Day ${plan.day}. ${item.name}` : item.name}
+                  </div>
+                  <div className="report-landmark-desc">
+                    {hasPlan ? (
+                      <>
+                        <div style={{ marginBottom: "4px" }}>
+                          {item.region} / {plan.dayTitle}
+                        </div>
+                        <div>{plan.reason}</div>
+                      </>
+                    ) : (
+                      <>
+                        {item.region}에 위치한 랜드마크입니다. (AI 일정에서
+                        상세 설명을 불러오지 못했습니다.)
+                      </>
+                    )}
+                  </div>
                 </div>
-                <div className="report-landmark-desc">
-                  {item.region}에 위치한 랜드마크입니다. (추후 백엔드/CSV에서
-                  상세 설명과 이동 시간, 추천 동선을 불러와 채울 예정)
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

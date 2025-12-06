@@ -17,12 +17,19 @@ class Landmark(Base):
     __tablename__ = "landmarks"
 
     id = Column(Integer, primary_key=True, index=True)
-    country = Column(String(20), index=True)   # "태국", "일본", "영국"
-    region = Column(String(20), index=True)    # "방콕", "도쿄" 등
-    name = Column(String(200), nullable=False)
+    country = Column(String, nullable=False)
+    region = Column(String, nullable=False)
+    name = Column(String, nullable=False)
     description = Column(Text, nullable=True)
     lng = Column(Float, nullable=False)
     lat = Column(Float, nullable=False)
+
+    # 🔥 새로 추가
+    description_long = Column(Text, nullable=True)
+    highlight_points = Column(Text, nullable=True)  # "\n"로 join한 텍스트
+    best_time = Column(String(100), nullable=True)
+    recommended_duration = Column(String(100), nullable=True)
+    local_tip = Column(Text, nullable=True)
 
 
 class Itinerary(Base):

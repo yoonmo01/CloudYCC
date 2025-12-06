@@ -4,7 +4,8 @@
   display: flex;
   min-height: 100vh;
   background: #f3f4f6;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }
 
 /* ====== 왼쪽 사이드바 ====== */
@@ -109,6 +110,48 @@
   color: #444;
 }
 
+/* ==== 여행 테마 카드 ==== */
+
+.theme-card {
+  padding: 12px 14px;
+}
+
+.theme-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.theme-chip-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.theme-chip {
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 9999px;
+  border: none;
+  background: #e5e7eb;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease,
+    transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.theme-chip:hover {
+  background: #d1d5db;
+}
+
+.theme-chip-active {
+  background: #f97316;
+  color: #ffffff;
+  box-shadow: 0 0 0 1px rgba(248, 250, 252, 0.9),
+    0 4px 10px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+
 /* 생성하기 버튼 */
 
 .generate-button {
@@ -201,8 +244,8 @@
 /* 지도 박스 */
 
 .main-map-area .map-placeholder {
-  position: relative;   /* 🔥 추가 */
-  z-index: 1;           /* 🔥 추가 */
+  position: relative;
+  z-index: 1;
   width: 100%;
   height: calc(100vh - 48px);
   border-radius: 12px;
@@ -211,37 +254,42 @@
   background: #ccc;
 }
 
-
 /* 패널이 열려 있을 때는 지도 오른쪽에 여백 확보 */
 .main-map-area.detail-open .map-placeholder {
   margin-right: 280px; /* 패널 너비만큼 밀어줌 */
 }
 
-/* 오른쪽 토글 바 (◀ ▶ 버튼) */
 
+
+/* 오른쪽 토글 바 (◀ ▶ 버튼) */
 .detail-toggle {
   position: absolute;
   top: 50%;
-  right: 0;
   transform: translateY(-50%);
-  width: 24px;
-  height: 80px;
-  border-radius: 12px 0 0 12px;
-  border: 1px solid #ccc;
-  border-right: none;
-  background: #f8f8f8;
+  right: 0; /* 패널이 닫혀 있을 때는 화면 오른쪽 끝 */
+  width: 32px;
+  height: 64px;
+  border-radius: 16px 0 0 16px;
+  border: none;
+  background: #f3f4f6;
+  box-shadow: -4px 0 12px rgba(15, 23, 42, 0.25);
   cursor: pointer;
-  font-size: 14px;
+  font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 50;
+  z-index: 60;
 }
 
-/* 패널이 열려 있을 때는 패널 옆으로 이동 */
+/* 패널이 열려 있을 때는 패널 너비만큼 왼쪽으로 이동 */
+.detail-toggle.open {
+  right: 420px;
+}
 
-.main-map-area.detail-open .detail-toggle {
-  right: 280px;
+@media (min-width: 1400px) {
+  .detail-toggle.open {
+    right: 480px;
+  }
 }
 
 /* 상세 패널 */
@@ -262,19 +310,14 @@
   flex-direction: column;
 }
 
-/* 패널 상단: 사진 + 이름 */
-
-.detail-top {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
-}
+/* 패널 상단: 사진 (전체 폭) */
 
 .detail-photo-box {
-  flex: 0 0 80px;
-  height: 80px;
+  width: 100%;
+  height: 160px;
   background: #e0e0e0;
-  border-radius: 8px;
+  border-radius: 10px;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -282,11 +325,21 @@
   color: #555;
 }
 
+/* 사진이 박스를 꽉 채우도록 */
+.detail-photo-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* 필요하면 contain 으로 바꿔도 됨 */
+  display: block;
+}
+
+/* 제목 박스 */
+
 .detail-name-box {
-  flex: 1;
+  margin-top: 10px;
   background: #ffffff;
-  border-radius: 8px;
-  padding: 8px 10px;
+  border-radius: 10px;
+  padding: 10px 12px;
   font-size: 14px;
   font-weight: 600;
   display: flex;
@@ -299,13 +352,53 @@
   flex: 1;
   margin-top: 8px;
   background: #ffffff;
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 10px 12px;
   font-size: 13px;
   color: #555;
   line-height: 1.4;
   overflow-y: auto;
 }
+
+/* 상세 패널 하단 버튼 영역 */
+
+.detail-actions {
+  margin-top: 10px;
+}
+
+.detail-add-button {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 9999px; /* pill 형태 */
+  border: none;
+  background: #f97316; /* 오렌지 포인트 */
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transition: background 0.15s ease, transform 0.1s ease,
+    box-shadow 0.15s ease;
+}
+
+.detail-add-button:hover:not(:disabled) {
+  background: #ea580c;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+}
+
+.detail-add-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+}
+
+.detail-add-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+  box-shadow: none;
+}
+
+
 /* Leaflet divIcon용 커스텀 마커 */
 .custom-map-marker {
   width: 18px;
@@ -315,6 +408,7 @@
   border: 2px solid #ffffff;
   box-shadow: 0 0 0 3px rgba(255, 75, 75, 0.4);
 }
+
 /* ==== 예상 날씨 카드 ==== */
 
 .weather-card {
@@ -401,4 +495,207 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ===== 오른쪽 상세 패널 영역 튜닝 ===== */
+
+/* 지도 + 상세 패널 영역 기본 레이아웃 보정 */
+.main-map-area {
+  position: relative;
+  display: flex;
+  height: 100%;
+}
+
+/* 지도 영역은 flex:1, 패널이 열리면 오른쪽 여백을 줘서 공간 확보 */
+.map-placeholder {
+  flex: 1;
+  transition: margin-right 0.25s ease;
+}
+
+.main-map-area.detail-open .map-placeholder {
+  margin-right: 420px;
+}
+
+/* 큰 화면에서는 패널을 조금 더 넓게 */
+@media (min-width: 1400px) {
+  .main-map-area.detail-open .map-placeholder {
+    margin-right: 480px;
+  }
+}
+
+/* 오른쪽 상세 패널 자체 */
+.detail-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 420px;
+  height: 100%;
+  background: #ffffff;
+  box-shadow: -8px 0 24px rgba(15, 23, 42, 0.15);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 18px;
+  box-sizing: border-box;
+}
+
+@media (min-width: 1400px) {
+  .detail-panel {
+    width: 480px;
+  }
+}
+
+/* 상단: 사진 + 제목 영역 */
+.detail-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+/* 사진 박스 */
+.detail-photo-box {
+  width: 120px;
+  height: 90px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.detail-photo-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 제목 + 태그 */
+.detail-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.detail-name-box {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 4px;
+  word-break: keep-all;
+}
+
+.detail-chip-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.detail-chip-region {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  background-color: #eff6ff;
+  color: #1d4ed8;
+}
+
+/* 가운데: 스크롤 가능한 텍스트 영역 */
+.detail-scroll {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 12px;
+}
+
+.detail-info-box {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #374151;
+}
+
+/* 섹션 공통 스타일 */
+.detail-section {
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.detail-section:last-child {
+  border-bottom: none;
+}
+
+.detail-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #6b7280;
+  margin: 0 0 4px 0;
+}
+
+/* 메인 설명 크게 보이도록 */
+.detail-main-text {
+  margin: 0;
+  font-size: 13px;
+  color: #111827;
+  white-space: pre-line;
+}
+
+/* 포인트 리스트 */
+.detail-point-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: #374151;
+}
+
+/* 방문 정보 박스 */
+.detail-visit-box {
+  background-color: #f3f4f6;
+  border-radius: 10px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-visit-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #4b5563;
+  margin-right: 4px;
+}
+
+.detail-visit-value {
+  font-size: 12px;
+  color: #111827;
+}
+
+/* 현지 꿀팁 */
+.detail-tip-text {
+  margin: 0;
+  font-size: 12px;
+  color: #374151;
+  white-space: pre-line;
+}
+
+/* 빈 상태 안내 */
+.detail-empty-text {
+  margin: 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* 하단 버튼 영역 */
+.detail-actions {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* 이미 만들어 둔 초록색 버튼과 잘 어울리도록(필요시 살짝 수정) */
+.detail-add-button {
+  min-width: 160px;
 }

@@ -58,6 +58,12 @@ def get_travel_overview(
             region=lm.region,
             name=lm.name,
             description=lm.description,
+            # 🔥 여기서부터 새 필드들 매핑
+            description_long=lm.description_long,
+            highlight_points=lm.highlight_points,
+            best_time=lm.best_time,
+            recommended_duration=lm.recommended_duration,
+            local_tip=lm.local_tip,
             lng=lm.lng,
             lat=lm.lat,
         )

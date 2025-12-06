@@ -72,6 +72,13 @@ def list_landmarks(
             description=lm.description,
             lng=lm.lng,
             lat=lm.lat,
+            description_long=lm.description_long,
+            highlight_points=(
+                lm.highlight_points.split("\n") if lm.highlight_points else None
+            ),
+            best_time=lm.best_time,
+            recommended_duration=lm.recommended_duration,
+            local_tip=lm.local_tip,
         )
         for lm in landmarks
     ]

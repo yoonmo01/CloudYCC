@@ -102,16 +102,55 @@ def download_itinerary_csv(
     db: Session = Depends(get_db),
 ):
     """
-    AI가 만든 일정 텍스트를 간단하게 줄 단위로 CSV로 내려주는 엔드포인트.
-    (현재는 ai_summary 전체를 텍스트로 간주해서 CSV로 변환하는 용도)
+    리포트 페이지에 나오는 모든 내용을 CSV로 다운로드하는 엔드포인트.
+    - 기본 메타 정보
+    - overview
+    - daily_plan (+ 선택 랜드마크/추천 장소 구분)
+    - tips
+    - 나라별 추가 추천(맛집 / 액티비티 / 박물관)
     """
     itinerary = crud.get_itinerary(db, itinerary_id)
     if not itinerary:
         raise HTTPException(status_code=404, detail="일정을 찾을 수 없습니다.")
 
-    csv_str = CSVService.itinerary_to_csv_string(itinerary)
+    if not itinerary.ai_summary:
+        raise HTTPException(status_code=400, detail="이 일정에는 AI 요약 데이터가 없습니다.")
 
-    filename = f"itinerary_{itinerary_id}.csv"
+    # 1) ai_summary(JSON 문자열) -> ItineraryDetail 파싱
+    try:
+        detail_raw = json.loads(itinerary.ai_summary)
+        detail = ItineraryDetail(**detail_raw)
+    except Exception as e:
+        print(f"[Itinerary CSV] ItineraryDetail 파싱 오류: {e}")
+        raise HTTPException(status_code=500, detail="AI 일정 데이터 파싱에 실패했습니다.")
+
+    # 2) 국가/지역 코드에 따라 추가 데이터 조회 (report와 동일 로직)
+    restaurants: List[JapanRestaurantOut] = []
+    activities: List[ThailandActivityOut] = []
+    museums: List[UkMuseumOut] = []
+
+    if itinerary.country_code == "JP":
+        jp_items = crud.get_japan_restaurants_by_region(db, itinerary.region_code)
+        restaurants = [JapanRestaurantOut.model_validate(item) for item in jp_items]
+
+    elif itinerary.country_code == "TH":
+        th_items = crud.get_thailand_activities_by_region(db, itinerary.region_code)
+        activities = [ThailandActivityOut.model_validate(item) for item in th_items]
+
+    elif itinerary.country_code == "UK":
+        uk_items = crud.get_uk_museums_by_region(db, itinerary.region_code)
+        museums = [UkMuseumOut.model_validate(item) for item in uk_items]
+
+    # 3) CSV 문자열 생성
+    csv_str = CSVService.itinerary_report_to_csv_string(
+        itinerary=itinerary,
+        detail=detail,
+        restaurants=restaurants,
+        activities=activities,
+        museums=museums,
+    )
+
+    filename = f"itinerary_report_{itinerary_id}.csv"
     headers = {
         "Content-Disposition": f'attachment; filename="{filename}"'
     }
